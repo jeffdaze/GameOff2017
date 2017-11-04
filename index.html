@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cardboard Quest!</title>
+    <script src="lib/aframe.min.js"></script>
+</head>
+<body>
+<a-scene fog="type: linear; color: #111; far: 2200; near: 0;">
+
+    <a-box position="0 1 1" width="1" height="1" depth="1"></a-box>
+
+    <a-entity geometry="primitive: plane; height: 8000; width: 8000;" material="side: double; transparent: true; opacity:0.5" position="0 -0.1 -5" rotation="-90 0 0"></a-entity>
+
+    <a-sky color="#ECECEC"></a-sky>
+
+    <!-- camera -->
+    <a-entity position="0 2 4" camera look-controls wasd-controls="acceleration: 500">
+
+        <!-- Hands
+        <a-entity hand-controls="left" scale="0.08 0.08 0.08"></a-entity>
+        <a-entity hand-controls="right" scale="0.08 0.08 0.08"></a-entity>
+        -->
+    </a-entity>
+
+</a-scene>
+</body>
+</html>
