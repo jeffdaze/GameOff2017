@@ -9,6 +9,18 @@
 <body>
 <a-scene fog="type: linear; color: #111; far: 2200; near: 0;">
 
+    <!-- card experiment...
+    <a-assets>
+        <a-cubemap id="card">
+            <img src="right.png">
+            <img src="left.png">
+            <img src="top.png">
+            <img src="bottom.png">
+            <img src="front.png">
+            <img src="back.png">
+        </a-cubemap>
+    </a-assets>
+    -->
 
     <!-- moving enemy guy... -->
     <a-entity geometry="primitive: plane; height: 10; width: 20;" position="0 4 180" material="shader: flat; transparent: true; side: double; src: url(assets/imp.png); alphaTest: 0.5;">
@@ -16,7 +28,39 @@
     </a-entity>
 
     <!-- test wall -->
-    <a-entity geometry="primative: plane; height:10; width:8;" position="0 5 -6" material="shader: flat; transparent: true; side: double; src: url(assets/wall.png);"></a-entity>
+    <a-entity geometry="primitive: plane; height:10; width:8;" position="0 5 -10" material="shader: flat; transparent: true; side: double; src: url(assets/wall.png);"></a-entity>
+
+
+    <!-- test card -->
+    <!-- main frame -->
+    <a-entity geometry="primitive: box; height:1.42; width:1; depth:0.01; metalness:0.8;" position="0 1.5 0" material="shader: flat; transparent: true; side:double; src: url(assets/plain_card.png); alphaTest: 0.5;">
+        <!-- background -->
+        <a-entity geometry="primitive: plane; height:0.5; width:0.5" position="0 0.15 0.03" material="shader: flat; transparent: true; side:double; src: url(assets/borders/Frame_Weapon_128.png); alphaTest: 0.5;">
+
+            <!-- sample animation...
+            <a-animation attribute="rotation"
+                         dur="20000"
+                         fill="none"
+                         to="0 0 -360"
+                         repeat="indefinite"></a-animation>
+                         -->
+            <!-- icon -->
+            <a-entity geometry="primitive: plane; height:0.5; width:0.5" position="0 0 0.05" material="shader: flat; transparent: true; side:double; src: url(assets/icons/sword.png); alphaTest: 0.5;">
+                <!--
+                <a-animation attribute="rotation"
+                             dur="20000"
+                             fill="none"
+                             to="0 0 720"
+                             repeat="indefinite"></a-animation>
+                             -->
+            </a-entity>
+        </a-entity>
+
+        <!-- text -->
+        <a-entity text="value: Hello World;color:#000; align:center;" scale="2 2 2" position="0 -0.25 0"></a-entity>
+
+    </a-entity>
+
 
     <!-- floor -->
     <a-entity geometry="primitive: plane; height: 8000; width: 8000;" material="side: double; transparent: true; src: url(assets/floor001.png); repeat: 800 800;" position="0 -0.1 -5" rotation="-90 0 0"></a-entity>
@@ -24,7 +68,7 @@
     <a-sky color="#ECECEC"></a-sky>
 
     <!-- camera -->
-    <a-entity position="0 2 4" camera look-controls wasd-controls="acceleration: 500">
+    <a-entity position="0 2 4" camera look-controls wasd-controls="acceleration: 100">
 
     </a-entity>
 
