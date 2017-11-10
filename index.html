@@ -5,6 +5,27 @@
     <title>Cardboard Quest!</title>
     <script src="lib/aframe.min.js"></script>
     <script src="lib/rot.min.js"></script>
+    <script>
+        AFRAME.registerComponent('multiface-card', {
+            dependencies: ['geometry'],
+            init: function() {
+                var mesh = this.el.getObject3D('mesh');
+                var geom = mesh.geometry;
+
+                console.log(mesh);
+
+                /*
+                 for (var i = 0; i < geom.faces.length; i++) {
+                 var face = geom.faces[i];
+                 //face.color.setRGB(Math.random(), Math.random(), Math.random());
+                 face.material = new THREE.MeshBasicMaterial({ map: THREE.ImageUtils.loadTexture( 'assets/card_side_pixel.png' ), overdraw: true } )
+                 }
+                 */
+                //geom.colorsNeedUpdate = true;
+                //mesh.material.vertexColors = THREE.FaceColors;
+            }
+        });
+    </script>
 </head>
 <body>
 <a-scene fog="type: linear; color: #111; far: 2200; near: 0;">
@@ -22,6 +43,17 @@
     </a-assets>
     -->
 
+    <a-assets>
+        <a-cubemap id="card">
+            <img src="assets/card_side_pixel.png">
+            <img src="assets/card_side_pixel.png">
+            <img src="assets/card_side_pixel.png">
+            <img src="assets/card_side_pixel.png">
+            <img src="assets/plain_card.png">
+            <img src="assets/plain_card_back.png">
+        </a-cubemap>
+    </a-assets>
+
     <!-- moving enemy guy... -->
     <a-entity geometry="primitive: plane; height: 10; width: 20;" position="0 4 180" material="shader: flat; transparent: true; side: double; src: url(assets/imp.png); alphaTest: 0.5;">
         <a-animation attribute="position" from="10 5 180" to="-5 5 1000" ease="linear" dur="50000"></a-animation>
@@ -33,7 +65,7 @@
 
     <!-- test card -->
     <!-- main frame -->
-    <a-entity geometry="primitive: box; height:1.42; width:1; depth:0.01; metalness:0.8;" position="0 1.5 0" material="shader: flat; transparent: true; side:double; src: url(assets/plain_card.png); alphaTest: 0.5;">
+    <a-entity geometry="primitive: box; height:1.42; width:1; depth:0.01;" position="0 1.5 0" material="shader: flat; transparent: true; side:double; src: url(assets/plain_card.png); alphaTest: 0.5;">
         <!-- background -->
         <a-entity geometry="primitive: plane; height:0.5; width:0.5" position="0 0.15 0.03" material="shader: flat; transparent: true; side:double; src: url(assets/borders/Frame_Weapon_128.png); alphaTest: 0.5;">
 
@@ -61,6 +93,11 @@
 
     </a-entity>
 
+
+    <!-- another test card...
+    <a-box multiface-card geometry="height:1.42; width:1; depth:0.01;" position="0 3 0" material="shader: flat; transparent: true; side:double; src: url(assets/plain_card.png); alphaTest: 0.5;">
+    </a-box>
+    -->
 
     <!-- floor -->
     <a-entity geometry="primitive: plane; height: 8000; width: 8000;" material="side: double; transparent: true; src: url(assets/floor001.png); repeat: 800 800;" position="0 -0.1 -5" rotation="-90 0 0"></a-entity>
