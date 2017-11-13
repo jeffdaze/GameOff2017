@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Card system test</title>
+</head>
+<body>
+
+<script>
+//Card definitions..
+
+//id: Used to index cards when making a deck
+//name: name that appears in the card listing
+//function: category of card and what it's used for
+//text: descriptive text that appears when viewing the card
+//duration: how many rounds the effect is active; -1 means infinite or until it's removed / destroyed
+//icon: image name to use for the card
+//value: the numeric amount that is used when applying the effect
+
+const cards = [
+    {
+        id: "a1",
+        name: "attack1",
+        function: "offence",
+        text: "Does 1 point of damage to the target opponent",
+        duration:"1",
+        icon: "",
+        value: 1
+    },
+    {
+        id: "a2",
+        name: "attack2",
+        function: "offence",
+        text: "Does 2 points of damage to the target opponent",
+        duration:"1",
+        icon: "",
+        value: 2
+    },
+    {
+        id: "b1",
+        name: "block1",
+        function: "defence",
+        text: "Absorbs up to 2 points of damage from the next attack ",
+        duration:"2",
+        icon: "",
+        value: 2
+    },
+    {
+        id: "b2",
+        name: "block2",
+        function: "defence",
+        text: "Absorbs up to 3 points of damage from the next attack ",
+        duration:"2",
+        icon: "",
+        value: 3
+    },
+    {
+        id: "s1",
+        name: "shield1",
+        function: "defence",
+        text: "Improved defence. Absorbs 1 point of damage",
+        duration: "-1",
+        icon: "",
+        value: 1
+    },
+    {
+        id: "s2",
+        name: "shield2",
+        function: "defence",
+        text: "Improved defence. Absorbs 2 points of damage",
+        duration: "-1",
+        icon: "",
+        value: 2
+    },
+    {
+        id: "w1",
+        name: "sword1",
+        function: "offence",
+        text: "Improved offence. Inflicts 1 additional point of damage",
+        duration: "-1",
+        icon: "",
+        value: 1
+    },
+    {
+        id: "w2",
+        name: "sword2",
+        function: "offence",
+        text: "Improved offence. Inflicts 2 additional points of damage",
+        duration: "-1",
+        icon: "",
+        value: 2
+    },
+    {
+        id: "d1",
+        name: "discard1",
+        function: "deckmanipulation",
+        text: "Target opponent discards 1 card",
+        duration: "1",
+        icon: "",
+        value: 1
+    },
+    {
+        id: "d2",
+        name: "draw1",
+        function: "deckmanipulation",
+        text: "Draw 1 card",
+        duration: "1",
+        icon: "",
+        value: 1
+    },
+    {
+        id: "d3",
+        name: "redraw1",
+        function: "deckmanipulation",
+        text: "Shuffle discarded cards back into your deck",
+        duration: "1",
+        icon: "",
+        value: 1
+    },
+    {
+        id: "p1",
+        name: "play1",
+        function: "play",
+        text: "Play 2 more cards this round",
+        duration: "1",
+        icon: "",
+        value: 2
+    },
+];
+
+//some starting vars...
+const baseDeckLimit = 20;
+const baseLifeLimit = 10;
+const baseHandLimit = 5;
+
+//player object...
+let player = {
+    currentLife: baseLifeLimit,
+    currentHandLimit: baseHandLimit,
+    currentDeckLimit: baseDeckLimit,
+    currentCards: [
+        "a1",
+        "a1",
+        "a1",
+        "a1",
+        "a2",
+        "a2",
+        "b1",
+        "b1",
+        "b1",
+        "b1",
+        "b2",
+        "s1",
+        "s1",
+        "s2",
+        "w1",
+        "w2",
+        "d1",
+        "d2",
+        "d3",
+        "p1"
+    ],
+    currentDeck: [
+            "a1",
+            "a1",
+            "a1",
+            "a1",
+            "a2",
+            "a2",
+            "b1",
+            "b1",
+            "b1",
+            "b1",
+            "b2",
+            "s1",
+            "s1",
+            "s2",
+            "w1",
+            "w2",
+            "d1",
+            "d2",
+            "d3",
+            "p1"
+    ]
+}
+
+</script>
+</body>
+</html>
