@@ -5,6 +5,18 @@
     <title>Card system test</title>
 </head>
 <body>
+<button id="start">Start</button>
+<div id="enemyLife"></div>
+<div id="enemyDeckCount"></div>
+<div id="enemyHand"></div>
+<br />
+<br />
+<br />
+<br />
+<div id="playerLife"></div>
+<div id="playerDeckCount"></div>
+<div id="playerHand"></div>
+
 
 <script>
 //Card definitions..
@@ -17,9 +29,9 @@
 //icon: image name to use for the card
 //value: the numeric amount that is used when applying the effect
 
-const cards = [
-    {
-        id: "a1",
+const cards = {
+
+    "a1": {
         name: "attack1",
         function: "offence",
         text: "Does 1 point of damage to the target opponent",
@@ -27,8 +39,8 @@ const cards = [
         icon: "",
         value: 1
     },
-    {
-        id: "a2",
+
+    "a2": {
         name: "attack2",
         function: "offence",
         text: "Does 2 points of damage to the target opponent",
@@ -36,8 +48,7 @@ const cards = [
         icon: "",
         value: 2
     },
-    {
-        id: "b1",
+    "b1": {
         name: "block1",
         function: "defence",
         text: "Absorbs up to 2 points of damage from the next attack ",
@@ -45,8 +56,7 @@ const cards = [
         icon: "",
         value: 2
     },
-    {
-        id: "b2",
+    "b2": {
         name: "block2",
         function: "defence",
         text: "Absorbs up to 3 points of damage from the next attack ",
@@ -54,8 +64,7 @@ const cards = [
         icon: "",
         value: 3
     },
-    {
-        id: "s1",
+    "s1": {
         name: "shield1",
         function: "defence",
         text: "Improved defence. Absorbs 1 point of damage",
@@ -63,8 +72,7 @@ const cards = [
         icon: "",
         value: 1
     },
-    {
-        id: "s2",
+    "s2": {
         name: "shield2",
         function: "defence",
         text: "Improved defence. Absorbs 2 points of damage",
@@ -72,8 +80,7 @@ const cards = [
         icon: "",
         value: 2
     },
-    {
-        id: "w1",
+    "w1": {
         name: "sword1",
         function: "offence",
         text: "Improved offence. Inflicts 1 additional point of damage",
@@ -81,8 +88,7 @@ const cards = [
         icon: "",
         value: 1
     },
-    {
-        id: "w2",
+    "w2": {
         name: "sword2",
         function: "offence",
         text: "Improved offence. Inflicts 2 additional points of damage",
@@ -90,8 +96,23 @@ const cards = [
         icon: "",
         value: 2
     },
-    {
-        id: "d1",
+    "h1": {
+        name: "heal1",
+        function: "heal",
+        text: "Heals 1 point",
+        duration: "0",
+        icon: "",
+        value: 1
+    },
+    "h2": {
+        name: "heal2",
+        function: "heal",
+        text: "Heals 2 points",
+        duration: "0",
+        icon: "",
+        value: 2
+    },
+    "d1": {
         name: "discard1",
         function: "deckmanipulation",
         text: "Target opponent discards 1 card",
@@ -99,8 +120,7 @@ const cards = [
         icon: "",
         value: 1
     },
-    {
-        id: "d2",
+    "d2": {
         name: "draw1",
         function: "deckmanipulation",
         text: "Draw 1 card",
@@ -108,8 +128,7 @@ const cards = [
         icon: "",
         value: 1
     },
-    {
-        id: "d3",
+    "d3": {
         name: "redraw1",
         function: "deckmanipulation",
         text: "Shuffle discarded cards back into your deck",
@@ -117,15 +136,31 @@ const cards = [
         icon: "",
         value: 1
     },
-    {
-        id: "p1",
+    "p1": {
         name: "play1",
         function: "play",
         text: "Play 2 more cards this round",
         duration: "1",
         icon: "",
         value: 2
-    },
+    }
+};
+
+let allCardIds = [
+    "a1",
+    "a2",
+    "b1",
+    "b2",
+    "s1",
+    "s2",
+    "w1",
+    "w2",
+    "h1",
+    "h2",
+    "d1",
+    "d2",
+    "d3",
+    "p1"
 ];
 
 //some starting vars...
@@ -138,6 +173,8 @@ let player = {
     currentLife: baseLifeLimit,
     currentHandLimit: baseHandLimit,
     currentDeckLimit: baseDeckLimit,
+    currentHand: [],
+    currentCardsInPlay: [],
     currentCards: [
         "a1",
         "a1",
@@ -145,9 +182,9 @@ let player = {
         "a1",
         "a2",
         "a2",
-        "b1",
-        "b1",
-        "b1",
+        "h1",
+        "h1",
+        "h1",
         "b1",
         "b2",
         "s1",
@@ -168,10 +205,10 @@ let player = {
             "a2",
             "a2",
             "b1",
-            "b1",
-            "b1",
-            "b1",
             "b2",
+            "h1",
+            "h1",
+            "h1",
             "s1",
             "s1",
             "s2",
@@ -182,6 +219,91 @@ let player = {
             "d3",
             "p1"
     ]
+};
+
+//enemy object...
+let enemy = {
+    currentLife: baseLifeLimit,
+    currentHandLimit: baseHandLimit,
+    currentDeckLimit: baseDeckLimit,
+    currentDeck: [],
+    currentHand: [],
+    currentCardsInPlay: []
+};
+
+
+//bind clicks to buttons...
+document.getElementById("start").addEventListener('click', function() {
+    runGame();
+}, false);
+
+
+
+function runGame()
+{
+    //build a deck for the enemy...
+    for(var x =0; x<enemy.currentDeckLimit; x++)
+    {
+        enemy.currentDeck.push(getArrItem(allCardIds));
+    }
+
+    //shuffle the player deck...
+    player.currentDeck = shuffle(player.currentDeck);
+
+    //set life values...
+    document.getElementById("enemyLife").innerHTML = enemy.currentLife;
+    document.getElementById("playerLife").innerHTML = player.currentLife;
+
+    //draw cards...
+    for(var y = 0; y<enemy.currentHandLimit; y++)
+    {
+        enemy.currentHand.push(enemy.currentDeck.pop());
+    }
+
+    for(var z = 0; z<player.currentHandLimit; z++)
+    {
+        player.currentHand.push(player.currentDeck.pop());
+    }
+
+    //list remaining cards...
+    document.getElementById("enemyDeckCount").innerHTML = enemy.currentDeck.length;
+    document.getElementById("playerDeckCount").innerHTML = player.currentDeck.length;
+
+    //list cards in hand...
+    document.getElementById("enemyHand").innerHTML = `${enemy.currentHand}`;
+    document.getElementById("playerHand").innerHTML = `${player.currentHand}`;
+
+}
+
+
+
+//get a card definition...
+let cardValue = (cardId) => cards[cardId];
+
+
+//utility functions...
+//return a random array value...
+let getArrItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+//shuffles an array...
+function shuffle(array) {
+    let counter = array.length;
+
+    // While there are elements in the array
+    while (counter > 0) {
+        // Pick a random index
+        let index = Math.floor(Math.random() * counter);
+
+        // Decrease counter by 1
+        counter--;
+
+        // And swap the last element with it
+        let temp = array[counter];
+        array[counter] = array[index];
+        array[index] = temp;
+    }
+
+    return array;
 }
 
 </script>
