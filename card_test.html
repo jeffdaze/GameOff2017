@@ -3,6 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <title>Card system test</title>
+    <style>
+        .card{
+            margin:5px;
+            padding:10px;
+            width:150px;
+            height:200px;
+            border:3px solid #000;
+            border-radius: 20px;
+            float:left;
+        }
+        .text{
+            margin-top: 20px;
+        }
+
+        #playerDeckCount{
+            float:none;
+        }
+    </style>
 </head>
 <body>
 <button id="start">Start</button>
@@ -14,7 +32,7 @@
 <br />
 <br />
 <div id="playerLife"></div>
-<div id="playerDeckCount"></div>
+<div id="playerDeckCount" class="card"></div>
 <div id="playerHand"></div>
 
 
@@ -237,7 +255,21 @@ document.getElementById("start").addEventListener('click', function() {
     runGame();
 }, false);
 
+document.getElementById("playerDeckCount").addEventListener('click', function() {
+    //check if there are any more cards that can be drawn...
+    if(checkDeck())
+    {
+        //draw another card...
+        drawCard();
 
+        //update the display...
+        updateDeckCount();
+
+        //show the user hand...
+        renderHand();
+    }
+    
+}, false);
 
 function runGame()
 {
@@ -262,16 +294,18 @@ function runGame()
 
     for(var z = 0; z<player.currentHandLimit; z++)
     {
-        player.currentHand.push(player.currentDeck.pop());
+        drawCard();
     }
 
     //list remaining cards...
     document.getElementById("enemyDeckCount").innerHTML = enemy.currentDeck.length;
-    document.getElementById("playerDeckCount").innerHTML = player.currentDeck.length;
+    updateDeckCount();
 
     //list cards in hand...
     document.getElementById("enemyHand").innerHTML = `${enemy.currentHand}`;
-    document.getElementById("playerHand").innerHTML = `${player.currentHand}`;
+
+    renderHand();
+
 
 }
 
@@ -280,6 +314,80 @@ function runGame()
 //get a card definition...
 let cardValue = (cardId) => cards[cardId];
 
+//player uses a card from their hand...
+let playCard = (cardIndex) => {
+    console.log(cardIndex);
+
+    //get the card
+    let activeCard = player.currentHand[cardIndex];
+
+    console.log(activeCard);
+
+    //get the card details, and act on it...
+    //MORE CODE HERE>>>
+
+};
+
+let renderHand = () => {
+
+    //clear the hand for re-rendering...
+    document.getElementById("playerHand").innerHTML = "";
+
+    //use let here instead of var for locally scoped var and no need of a closure
+    //to use i inside the event listener...
+    for(let i=0; i<player.currentHand.length; i++)
+    {
+
+        let cardTitle = document.createElement("div");
+        cardTitle.innerText = `${cardValue(player.currentHand[i]).name}`;
+
+        let cardText = document.createElement("div");
+        cardText.className = "text";
+        cardText.innerText = `${cardValue(player.currentHand[i]).text}`;
+
+        //create a card div...
+        let div = document.createElement("div");
+        div.className = "card";
+        div.appendChild(cardTitle);
+        div.appendChild(cardText);
+
+        //pass in the index of the current card...
+        div.addEventListener('click', function () {
+            playCard(i);
+        }, false);
+
+        document.getElementById("playerHand").appendChild(div);
+
+    }
+};
+
+
+let handleDeck = () => {
+    //check if there are any more cards that can be drawn...
+    checkDeck();
+
+    //draw another card...
+    drawCard();
+
+    //update the display...
+    updateDeckCount();
+
+    //show the user hand...
+    renderHand();
+};
+
+
+let checkDeck = () => {
+    if(player.currentDeck.length === 0)
+    {
+        return false;
+    }
+    return true;
+};
+
+let drawCard = () => player.currentHand.push(player.currentDeck.pop());
+
+let updateDeckCount = () => document.getElementById("playerDeckCount").innerHTML = player.currentDeck.length;
 
 //utility functions...
 //return a random array value...
