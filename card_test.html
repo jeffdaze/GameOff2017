@@ -12,6 +12,7 @@
             border:3px solid #000;
             border-radius: 20px;
             float:left;
+            cursor: pointer;
         }
         .text{
             margin-top: 20px;
@@ -51,116 +52,177 @@ const cards = {
 
     "a1": {
         name: "attack1",
-        function: "offence",
+        type: "offence",
         text: "Does 1 point of damage to the target opponent",
         duration:"1",
         icon: "",
-        value: 1
+        value: 1,
+        action: function()
+        {
+            enemy.currentLife -= this.value;
+            updateEnemyLife();
+        }
     },
 
     "a2": {
         name: "attack2",
-        function: "offence",
+        type: "offence",
         text: "Does 2 points of damage to the target opponent",
         duration:"1",
         icon: "",
-        value: 2
+        value: 2,
+        action: function()
+        {
+            enemy.currentLife -= this.value;
+            updateEnemyLife();
+        }
     },
     "b1": {
         name: "block1",
-        function: "defence",
+        type: "defence",
         text: "Absorbs up to 2 points of damage from the next attack ",
-        duration:"2",
+        duration:"-1",
         icon: "",
-        value: 2
+        value: 2,
+        action: function()
+        {
+            console.log(this);
+        }
     },
     "b2": {
         name: "block2",
-        function: "defence",
+        type: "defence",
         text: "Absorbs up to 3 points of damage from the next attack ",
-        duration:"2",
+        duration:"-1",
         icon: "",
-        value: 3
+        value: 3,
+        action: function()
+        {
+            console.log(this);
+        }
     },
     "s1": {
         name: "shield1",
-        function: "defence",
+        type: "defence",
         text: "Improved defence. Absorbs 1 point of damage",
         duration: "-1",
         icon: "",
-        value: 1
+        value: 1,
+        action: function()
+        {
+            console.log(this);
+        }
     },
     "s2": {
         name: "shield2",
-        function: "defence",
+        type: "defence",
         text: "Improved defence. Absorbs 2 points of damage",
         duration: "-1",
         icon: "",
-        value: 2
+        value: 2,
+        action: function()
+        {
+            console.log(this);
+        }
     },
     "w1": {
         name: "sword1",
-        function: "offence",
+        type: "offence",
         text: "Improved offence. Inflicts 1 additional point of damage",
         duration: "-1",
         icon: "",
-        value: 1
+        value: 1,
+        action: function()
+        {
+            console.log(this);
+        }
     },
     "w2": {
         name: "sword2",
-        function: "offence",
+        type: "offence",
         text: "Improved offence. Inflicts 2 additional points of damage",
         duration: "-1",
         icon: "",
-        value: 2
+        value: 2,
+        action: function()
+        {
+            console.log(this);
+        }
     },
     "h1": {
         name: "heal1",
-        function: "heal",
+        type: "heal",
         text: "Heals 1 point",
         duration: "0",
         icon: "",
-        value: 1
+        value: 1,
+        action: function()
+        {
+            player.currentLife += this.value;
+            updatePlayerLife();
+        }
     },
     "h2": {
         name: "heal2",
-        function: "heal",
+        type: "heal",
         text: "Heals 2 points",
         duration: "0",
         icon: "",
-        value: 2
+        value: 2,
+        action: function()
+        {
+            player.currentLife += this.value;
+            updatePlayerLife();
+        }
     },
     "d1": {
         name: "discard1",
-        function: "deckmanipulation",
+        type: "deckmanipulation",
         text: "Target opponent discards 1 card",
         duration: "1",
         icon: "",
-        value: 1
+        value: 1,
+        action: function()
+        {
+            enemy.currentHand.pop();
+            updateEnemyHand();
+        }
     },
     "d2": {
         name: "draw1",
-        function: "deckmanipulation",
+        type: "deckmanipulation",
         text: "Draw 1 card",
         duration: "1",
         icon: "",
-        value: 1
+        value: 1,
+        action: function()
+        {
+            drawCard();
+        }
     },
     "d3": {
         name: "redraw1",
-        function: "deckmanipulation",
+        type: "deckmanipulation",
         text: "Shuffle discarded cards back into your deck",
         duration: "1",
         icon: "",
-        value: 1
+        value: 1,
+        action: function()
+        {
+            console.log(this);
+        }
     },
     "p1": {
         name: "play1",
-        function: "play",
+        type: "play",
         text: "Play 2 more cards this round",
         duration: "1",
         icon: "",
-        value: 2
+        value: 2,
+        action: function()
+        {
+            console.log(this);
+        }
     }
 };
 
@@ -236,7 +298,8 @@ let player = {
             "d2",
             "d3",
             "p1"
-    ]
+    ],
+    currentDiscard: []
 };
 
 //enemy object...
@@ -246,7 +309,8 @@ let enemy = {
     currentDeckLimit: baseDeckLimit,
     currentDeck: [],
     currentHand: [],
-    currentCardsInPlay: []
+    currentCardsInPlay: [],
+    currentDiscard: []
 };
 
 
@@ -268,7 +332,7 @@ document.getElementById("playerDeckCount").addEventListener('click', function() 
         //show the user hand...
         renderHand();
     }
-    
+
 }, false);
 
 function runGame()
@@ -283,8 +347,8 @@ function runGame()
     player.currentDeck = shuffle(player.currentDeck);
 
     //set life values...
-    document.getElementById("enemyLife").innerHTML = enemy.currentLife;
-    document.getElementById("playerLife").innerHTML = player.currentLife;
+    updateEnemyLife();
+    updatePlayerLife();
 
     //draw cards...
     for(var y = 0; y<enemy.currentHandLimit; y++)
@@ -302,7 +366,7 @@ function runGame()
     updateDeckCount();
 
     //list cards in hand...
-    document.getElementById("enemyHand").innerHTML = `${enemy.currentHand}`;
+    updateEnemyHand();
 
     renderHand();
 
@@ -321,10 +385,13 @@ let playCard = (cardIndex) => {
     //get the card
     let activeCard = player.currentHand[cardIndex];
 
-    console.log(activeCard);
+    //console.log(activeCard);
 
-    //get the card details, and act on it...
-    //MORE CODE HERE>>>
+    //run the card function...
+    cards[activeCard].action();
+
+    //discard the card if necessary...
+    handleDiscard(cardIndex);
 
 };
 
@@ -380,14 +447,32 @@ let handleDeck = () => {
 let checkDeck = () => {
     if(player.currentDeck.length === 0)
     {
+        console.log("You lose...");
         return false;
     }
     return true;
 };
 
+let handleDiscard = (cardIndex) => {
+    //copy the current card to the discard pile...
+    player.currentDiscard.push(player.currentHand[cardIndex]);
+
+    //now remove the card from the player hand...
+    player.currentHand.splice(cardIndex, 1);
+
+    //show the user hand...
+    renderHand();
+};
+
 let drawCard = () => player.currentHand.push(player.currentDeck.pop());
 
 let updateDeckCount = () => document.getElementById("playerDeckCount").innerHTML = player.currentDeck.length;
+
+let updatePlayerLife = () => document.getElementById("playerLife").innerHTML = player.currentLife;
+
+let updateEnemyLife = () => document.getElementById("enemyLife").innerHTML = enemy.currentLife;
+
+let updateEnemyHand = () => document.getElementById("enemyHand").innerHTML = `${enemy.currentHand}`;
 
 //utility functions...
 //return a random array value...
