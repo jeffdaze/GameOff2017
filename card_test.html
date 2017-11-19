@@ -10,6 +10,7 @@
             width:150px;
             height:200px;
             border:3px solid #000;
+            background: #FFF;
             border-radius: 20px;
             float:left;
             cursor: pointer;
@@ -19,21 +20,44 @@
         }
 
         #playerDeckCount{
-            float:none;
+            margin:5px;
+            padding:10px;
+            width:150px;
+            height:200px;
+            border:3px solid #000;
+            background: #FFF;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        #playerHand{
+            border:1px solid #2e2cb2;
+            height: 240px;
+            background: #5152b2;
+        }
+
+        #playerActiveCards{
+            border:1px solid #b2182c;
+            height: 240px;
+            background: #b24b5e;
         }
     </style>
 </head>
 <body>
-<button id="start">Start</button>
+<button id="start">Start</button><button id="playerTurn">Player Turn</button><button id="enemyTurn">Enemy Turn</button>
 <div id="enemyLife"></div>
+<div id="enemyActionPoints"></div>
 <div id="enemyDeckCount"></div>
 <div id="enemyHand"></div>
+<div id="enemyActiveCards"></div>
 <br />
 <br />
 <br />
 <br />
 <div id="playerLife"></div>
-<div id="playerDeckCount" class="card"></div>
+<div id="playerActionPoints"></div>
+<div id="playerDeckCount"></div>
+<div id="playerActiveCards"></div>
 <div id="playerHand"></div>
 
 
@@ -44,9 +68,11 @@
 //name: name that appears in the card listing
 //function: category of card and what it's used for
 //text: descriptive text that appears when viewing the card
-//duration: how many rounds the effect is active; -1 means infinite or until it's removed / destroyed
+//duration: how many rounds the effect is active; next means the next effect and -1 means infinite or until it's removed / destroyed
 //icon: image name to use for the card
+//cost: how many Action Points it takes to play the card
 //value: the numeric amount that is used when applying the effect
+//action: the function to run for the card to take effect
 
 const cards = {
 
@@ -54,8 +80,9 @@ const cards = {
         name: "attack1",
         type: "offence",
         text: "Does 1 point of damage to the target opponent",
-        duration:"1",
+        duration:"0",
         icon: "",
+        cost: 1,
         value: 1,
         action: function()
         {
@@ -68,8 +95,9 @@ const cards = {
         name: "attack2",
         type: "offence",
         text: "Does 2 points of damage to the target opponent",
-        duration:"1",
+        duration:"0",
         icon: "",
+        cost: 1,
         value: 2,
         action: function()
         {
@@ -81,24 +109,28 @@ const cards = {
         name: "block1",
         type: "defence",
         text: "Absorbs up to 2 points of damage from the next attack ",
-        duration:"-1",
+        duration:"next",
         icon: "",
+        cost: 1,
         value: 2,
         action: function()
         {
-            console.log(this);
+            player.currentCardsInPlay.push(this);
+            renderActivePlayerCards();
         }
     },
     "b2": {
         name: "block2",
         type: "defence",
         text: "Absorbs up to 3 points of damage from the next attack ",
-        duration:"-1",
+        duration:"next",
         icon: "",
+        cost: 1,
         value: 3,
         action: function()
         {
-            console.log(this);
+            player.currentCardsInPlay.push(this);
+            renderActivePlayerCards();
         }
     },
     "s1": {
@@ -107,10 +139,12 @@ const cards = {
         text: "Improved defence. Absorbs 1 point of damage",
         duration: "-1",
         icon: "",
+        cost: 1,
         value: 1,
         action: function()
         {
-            console.log(this);
+            player.currentCardsInPlay.push(this);
+            renderActivePlayerCards();
         }
     },
     "s2": {
@@ -119,10 +153,12 @@ const cards = {
         text: "Improved defence. Absorbs 2 points of damage",
         duration: "-1",
         icon: "",
+        cost: 1,
         value: 2,
         action: function()
         {
-            console.log(this);
+            player.currentCardsInPlay.push(this);
+            renderActivePlayerCards();
         }
     },
     "w1": {
@@ -131,10 +167,12 @@ const cards = {
         text: "Improved offence. Inflicts 1 additional point of damage",
         duration: "-1",
         icon: "",
+        cost: 1,
         value: 1,
         action: function()
         {
-            console.log(this);
+            player.currentCardsInPlay.push(this);
+            renderActivePlayerCards();
         }
     },
     "w2": {
@@ -143,10 +181,12 @@ const cards = {
         text: "Improved offence. Inflicts 2 additional points of damage",
         duration: "-1",
         icon: "",
+        cost: 1,
         value: 2,
         action: function()
         {
-            console.log(this);
+            player.currentCardsInPlay.push(this);
+            renderActivePlayerCards();
         }
     },
     "h1": {
@@ -155,6 +195,7 @@ const cards = {
         text: "Heals 1 point",
         duration: "0",
         icon: "",
+        cost: 1,
         value: 1,
         action: function()
         {
@@ -168,6 +209,7 @@ const cards = {
         text: "Heals 2 points",
         duration: "0",
         icon: "",
+        cost: 1,
         value: 2,
         action: function()
         {
@@ -179,8 +221,9 @@ const cards = {
         name: "discard1",
         type: "deckmanipulation",
         text: "Target opponent discards 1 card",
-        duration: "1",
+        duration: "0",
         icon: "",
+        cost: 1,
         value: 1,
         action: function()
         {
@@ -192,8 +235,9 @@ const cards = {
         name: "draw1",
         type: "deckmanipulation",
         text: "Draw 1 card",
-        duration: "1",
+        duration: "0",
         icon: "",
+        cost: 0,
         value: 1,
         action: function()
         {
@@ -206,27 +250,48 @@ const cards = {
         text: "Shuffle discarded cards back into your deck",
         duration: "1",
         icon: "",
+        cost: 1,
         value: 1,
         action: function()
         {
-            console.log(this);
+            player.currentDeck = player.currentDeck.concat(player.currentDiscard);
+            player.currentDiscard = [];
+            shuffle(player.currentDeck);
+            updateDeckCount();
         }
     },
-    "p1": {
-        name: "play1",
-        type: "play",
-        text: "Play 2 more cards this round",
-        duration: "1",
+    "ap1": {
+        name: "AP1",
+        type: "actionpoint",
+        text: "Add 1 to your Action Points this round",
+        duration: "0",
         icon: "",
+        cost: 0,
+        value: 1,
+        action: function()
+        {
+            player.currentActionPoints += this.value;
+            updatePlayerAP();
+        }
+    },
+    "ap2": {
+        name: "AP2",
+        type: "actionpoint",
+        text: "Add 2 to your Action Points this round",
+        duration: "0",
+        icon: "",
+        cost: 0,
         value: 2,
         action: function()
         {
-            console.log(this);
+            player.currentActionPoints += this.value;
+            updatePlayerAP();
         }
     }
 };
 
-let allCardIds = [
+//id list for all cards -- use this for keys in player and enemy hands...
+const allCardIds = [
     "a1",
     "a2",
     "b1",
@@ -240,19 +305,26 @@ let allCardIds = [
     "d1",
     "d2",
     "d3",
-    "p1"
+    "ap1",
+    "ap2"
 ];
 
 //some starting vars...
 const baseDeckLimit = 20;
 const baseLifeLimit = 10;
 const baseHandLimit = 5;
+const baseActionPoints = 100;
+
+//who is active for the current turn?
+//player always goes first...
+let currentTurn = "player";
 
 //player object...
 let player = {
     currentLife: baseLifeLimit,
     currentHandLimit: baseHandLimit,
     currentDeckLimit: baseDeckLimit,
+    currentActionPoints: baseActionPoints,
     currentHand: [],
     currentCardsInPlay: [],
     currentCards: [
@@ -275,7 +347,7 @@ let player = {
         "d1",
         "d2",
         "d3",
-        "p1"
+        "ap1"
     ],
     currentDeck: [
             "a1",
@@ -297,7 +369,7 @@ let player = {
             "d1",
             "d2",
             "d3",
-            "p1"
+            "ap1"
     ],
     currentDiscard: []
 };
@@ -307,6 +379,7 @@ let enemy = {
     currentLife: baseLifeLimit,
     currentHandLimit: baseHandLimit,
     currentDeckLimit: baseDeckLimit,
+    currentActionPoints: baseActionPoints,
     currentDeck: [],
     currentHand: [],
     currentCardsInPlay: [],
@@ -350,6 +423,10 @@ function runGame()
     updateEnemyLife();
     updatePlayerLife();
 
+    //set action points...
+    updatePlayerAP();
+    updateEnemyAP();
+
     //draw cards...
     for(var y = 0; y<enemy.currentHandLimit; y++)
     {
@@ -371,6 +448,7 @@ function runGame()
     renderHand();
 
 
+
 }
 
 
@@ -380,18 +458,97 @@ let cardValue = (cardId) => cards[cardId];
 
 //player uses a card from their hand...
 let playCard = (cardIndex) => {
-    console.log(cardIndex);
 
     //get the card
     let activeCard = player.currentHand[cardIndex];
 
-    //console.log(activeCard);
+
+    //check if the player has enough AP to play the card...
+    if(player.currentActionPoints < cards[activeCard].cost)
+    {
+        return false;
+    }
+
+    //now the player pays for the card...
+    player.currentActionPoints -= cards[activeCard].cost;
+    updatePlayerAP();
+
+    //check for active effects; send along the card object...
+    let processedCard = checkActiveEffects(cards[activeCard]);
 
     //run the card function...
-    cards[activeCard].action();
+    processedCard.action();
+        //run the card function...
+        //cards[activeCard].action();
 
     //discard the card if necessary...
     handleDiscard(cardIndex);
+
+};
+
+let checkActiveEffects = (cardInfo) => {
+    //check in the active cards array and see if the current played card
+    //has any interactions..
+    //if there are no active cards we're done here...
+    if(player.currentCardsInPlay.length == 0 && enemy.currentCardsInPlay.length == 0)
+    {
+        return cardInfo;
+    }
+
+    //if this is a 'permanent' card don't add any bonuses...
+    if(cardInfo.duration == "next" || cardInfo.duration == "-1")
+    {
+        return cardInfo;
+    }
+
+    //clone the card that was played in case we need to modify values...
+    let cardClone = Object.assign({}, cardInfo);
+
+
+    //get the type of the card that is being played;
+    //from now on we are only using the cloned card!
+    //handling for each card type;
+    //EG if the card played is offence look for offence effects in favour of the card owner
+    //and defence effects for the current target...
+
+
+    if(cardClone.type == "offence")
+    {
+        for(let i =0;i<player.currentCardsInPlay.length; i++)
+        {
+            //look for offence cards; then add the value to the played card...
+            if(player.currentCardsInPlay[i].type == "offence")
+            {
+
+                cardClone.value += player.currentCardsInPlay[i].value;
+
+                //cleanup if necessary...
+                if(player.currentCardsInPlay[i].duration == "next")
+                {
+                    //discard the card in play...
+                    handleDiscardFromPlay(i);
+                }
+            }
+        }
+
+        for(let ii =0;ii<enemy.currentCardsInPlay.length; ii++)
+        {
+            //look for defence cards; then subtract the value from the played card...
+            if(enemy.currentCardsInPlay[ii].type == "defence")
+            {
+                cardClone.value -= enemy.currentCardsInPlay[ii].value;
+
+                //cleanup if necessary...
+                if(enemy.currentCardsInPlay[ii].duration == "next")
+                {
+                    //discard the card in play...
+                    //handleDiscardFromPlay(ii);
+                }
+            }
+        }
+    }
+
+    return cardClone;
 
 };
 
@@ -412,11 +569,16 @@ let renderHand = () => {
         cardText.className = "text";
         cardText.innerText = `${cardValue(player.currentHand[i]).text}`;
 
+        let cardCost = document.createElement("div");
+        cardCost.className = "cost";
+        cardCost.innerText = `${cardValue(player.currentHand[i]).cost}`;
+
         //create a card div...
         let div = document.createElement("div");
         div.className = "card";
         div.appendChild(cardTitle);
         div.appendChild(cardText);
+        div.appendChild(cardCost);
 
         //pass in the index of the current card...
         div.addEventListener('click', function () {
@@ -427,6 +589,42 @@ let renderHand = () => {
 
     }
 };
+
+
+let renderActivePlayerCards = () => {
+
+    //clear the hand for re-rendering...
+    document.getElementById("playerActiveCards").innerHTML = "";
+
+    //use let here instead of var for locally scoped var and no need of a closure
+    //to use i inside the event listener...
+    for(let i=0; i<player.currentCardsInPlay.length; i++)
+    {
+
+        let cardTitle = document.createElement("div");
+        cardTitle.innerText = `${player.currentCardsInPlay[i].name}`;
+
+        let cardText = document.createElement("div");
+        cardText.className = "text";
+        cardText.innerText = `${player.currentCardsInPlay[i].text}`;
+
+        //create a card div...
+        let div = document.createElement("div");
+        div.className = "card";
+        div.appendChild(cardTitle);
+        div.appendChild(cardText);
+
+        //these cards may or may not need click events; depends on how I'll implement it...
+        //pass in the index of the current card...
+       // div.addEventListener('click', function () {
+       //     playCard(i);
+       // }, false);
+
+        document.getElementById("playerActiveCards").appendChild(div);
+
+    }
+};
+
 
 
 let handleDeck = () => {
@@ -464,21 +662,39 @@ let handleDiscard = (cardIndex) => {
     renderHand();
 };
 
+let handleDiscardFromPlay = (cardIndex) => {
+    //copy the current card to the discard pile...
+    player.currentDiscard.push(player.currentCardsInPlay[cardIndex]);
+
+    //now remove the card from the player hand...
+    player.currentCardsInPlay.splice(cardIndex, 1);
+
+    //show the user hand...
+    renderActivePlayerCards();
+
+};
+
 let drawCard = () => player.currentHand.push(player.currentDeck.pop());
 
 let updateDeckCount = () => document.getElementById("playerDeckCount").innerHTML = player.currentDeck.length;
 
 let updatePlayerLife = () => document.getElementById("playerLife").innerHTML = player.currentLife;
 
+let updatePlayerAP = () => document.getElementById("playerActionPoints").innerHTML = player.currentActionPoints;
+
 let updateEnemyLife = () => document.getElementById("enemyLife").innerHTML = enemy.currentLife;
 
+let updateEnemyAP = () => document.getElementById("enemyActionPoints").innerHTML = enemy.currentActionPoints;
+
 let updateEnemyHand = () => document.getElementById("enemyHand").innerHTML = `${enemy.currentHand}`;
+
+
 
 //utility functions...
 //return a random array value...
 let getArrItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-//shuffles an array...
+//shuffles an array (Fisher–Yates)...
 function shuffle(array) {
     let counter = array.length;
 
