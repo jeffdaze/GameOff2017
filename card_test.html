@@ -86,7 +86,12 @@ const cards = {
         value: 1,
         action: function()
         {
-            enemy.currentLife -= this.value;
+            let target = "enemy";
+            if(currentTurn == "enemy")
+            {
+                target = "player";
+            }
+            scope[target].currentLife -= this.value;
             updateEnemyLife();
         }
     },
@@ -101,7 +106,12 @@ const cards = {
         value: 2,
         action: function()
         {
-            enemy.currentLife -= this.value;
+            let target = "enemy";
+            if(currentTurn == "enemy")
+            {
+                target = "player";
+            }
+            scope[target].currentLife -= this.value;
             updateEnemyLife();
         }
     },
@@ -115,7 +125,7 @@ const cards = {
         value: 2,
         action: function()
         {
-            player.currentCardsInPlay.push(this);
+            scope[currentTurn].currentCardsInPlay.push(this);
             renderActivePlayerCards();
         }
     },
@@ -129,7 +139,7 @@ const cards = {
         value: 3,
         action: function()
         {
-            player.currentCardsInPlay.push(this);
+            scope[currentTurn].currentCardsInPlay.push(this);
             renderActivePlayerCards();
         }
     },
@@ -143,7 +153,7 @@ const cards = {
         value: 1,
         action: function()
         {
-            player.currentCardsInPlay.push(this);
+            scope[currentTurn].currentCardsInPlay.push(this);
             renderActivePlayerCards();
         }
     },
@@ -157,7 +167,7 @@ const cards = {
         value: 2,
         action: function()
         {
-            player.currentCardsInPlay.push(this);
+            scope[currentTurn].currentCardsInPlay.push(this);
             renderActivePlayerCards();
         }
     },
@@ -171,7 +181,7 @@ const cards = {
         value: 1,
         action: function()
         {
-            player.currentCardsInPlay.push(this);
+            scope[currentTurn].currentCardsInPlay.push(this);
             renderActivePlayerCards();
         }
     },
@@ -185,7 +195,7 @@ const cards = {
         value: 2,
         action: function()
         {
-            player.currentCardsInPlay.push(this);
+            scope[currentTurn].currentCardsInPlay.push(this);
             renderActivePlayerCards();
         }
     },
@@ -313,7 +323,11 @@ const allCardIds = [
 const baseDeckLimit = 20;
 const baseLifeLimit = 10;
 const baseHandLimit = 5;
-const baseActionPoints = 100;
+const baseActionPoints = 1;
+
+//global scope object used to keep track of player and enemy objects...
+let scope = {};
+
 
 //who is active for the current turn?
 //player always goes first...
@@ -387,10 +401,52 @@ let enemy = {
 };
 
 
+//generate scope vals...
+//now we can refer to entity objects via the currentTurn string:
+//
+//  scope[currentTurn]
+//
+//which can be either "player" or "enemy"
+scope.player = player;
+scope.enemy = enemy;
+
+
 //bind clicks to buttons...
 document.getElementById("start").addEventListener('click', function() {
-    runGame();
+    initGame();
 }, false);
+
+//manual turn buttons...
+document.getElementById("playerTurn").addEventListener('click', function() {
+    currentTurn = "player";
+    upKeep();
+}, false);
+
+document.getElementById("enemyTurn").addEventListener('click', function() {
+    currentTurn = "enemy";
+    upKeep();
+    //play the first card in the hand until AP run out; super simple AI...
+    function AIplayEnemyCard(chosenCard)
+    {
+        playCard(chosenCard);
+
+        //recursion...
+        if(enemy.currentActionPoints > 0)
+        {
+            AIplayEnemyCard(chosenCard);
+        }
+        else
+        {
+            endTurn();
+        }
+    }
+
+
+    AIplayEnemyCard(0);
+
+
+}, false);
+
 
 document.getElementById("playerDeckCount").addEventListener('click', function() {
     //check if there are any more cards that can be drawn...
@@ -408,7 +464,7 @@ document.getElementById("playerDeckCount").addEventListener('click', function() 
 
 }, false);
 
-function runGame()
+function initGame()
 {
     //build a deck for the enemy...
     for(var x =0; x<enemy.currentDeckLimit; x++)
@@ -451,7 +507,33 @@ function runGame()
 
 }
 
+//game phases here...
+let upKeep = () => {
 
+    //add one AP for the current turn; this is cumulative!
+    scope[currentTurn].currentActionPoints++;
+
+    //enable player interaction on their turn...
+    if(currentTurn == "player")
+    {
+        //@TODO enable interaction...
+    }
+};
+
+let endTurn = () => {
+
+    if(currentTurn == "player")
+    {
+        currentTurn = "enemy";
+    }
+    else
+    {
+        currentTurn = "player";
+    }
+
+    //@TODO disable player interaction...
+
+};
 
 //get a card definition...
 let cardValue = (cardId) => cards[cardId];
@@ -459,19 +541,31 @@ let cardValue = (cardId) => cards[cardId];
 //player uses a card from their hand...
 let playCard = (cardIndex) => {
 
-    //get the card
-    let activeCard = player.currentHand[cardIndex];
+    //use globals to figure out who is playing the card...
 
+    //get the card
+    let activeCard = scope[currentTurn].currentHand[cardIndex];
+
+    console.log(activeCard, cards[activeCard]);
 
     //check if the player has enough AP to play the card...
-    if(player.currentActionPoints < cards[activeCard].cost)
+    if(scope[currentTurn].currentActionPoints < cards[activeCard].cost)
     {
         return false;
     }
 
     //now the player pays for the card...
-    player.currentActionPoints -= cards[activeCard].cost;
-    updatePlayerAP();
+    scope[currentTurn].currentActionPoints -= cards[activeCard].cost;
+
+    if(currentTurn == "player")
+    {
+        updatePlayerAP();
+    }
+    else
+    {
+        updateEnemyAP();
+    }
+
 
     //check for active effects; send along the card object...
     let processedCard = checkActiveEffects(cards[activeCard]);
@@ -483,10 +577,18 @@ let playCard = (cardIndex) => {
 
     //discard the card if necessary...
     handleDiscard(cardIndex);
-
 };
 
 let checkActiveEffects = (cardInfo) => {
+
+    //figure out whom the target is...
+    let target = "enemy";
+
+    if(currentTurn == "enemy")
+    {
+        target = "player";
+    }
+
     //check in the active cards array and see if the current played card
     //has any interactions..
     //if there are no active cards we're done here...
@@ -514,35 +616,35 @@ let checkActiveEffects = (cardInfo) => {
 
     if(cardClone.type == "offence")
     {
-        for(let i =0;i<player.currentCardsInPlay.length; i++)
+        for(let i =0;i<scope[currentTurn].currentCardsInPlay.length; i++)
         {
             //look for offence cards; then add the value to the played card...
-            if(player.currentCardsInPlay[i].type == "offence")
+            if(scope[currentTurn].currentCardsInPlay[i].type == "offence")
             {
 
-                cardClone.value += player.currentCardsInPlay[i].value;
+                cardClone.value += scope[currentTurn].currentCardsInPlay[i].value;
 
                 //cleanup if necessary...
-                if(player.currentCardsInPlay[i].duration == "next")
+                if(scope[currentTurn].currentCardsInPlay[i].duration == "next")
                 {
                     //discard the card in play...
-                    handleDiscardFromPlay(i);
+                    handleDiscardFromPlay(i, currentTurn);
                 }
             }
         }
 
-        for(let ii =0;ii<enemy.currentCardsInPlay.length; ii++)
+        for(let ii =0;ii<scope[target].currentCardsInPlay.length; ii++)
         {
             //look for defence cards; then subtract the value from the played card...
-            if(enemy.currentCardsInPlay[ii].type == "defence")
+            if(scope[target].currentCardsInPlay[ii].type == "defence")
             {
-                cardClone.value -= enemy.currentCardsInPlay[ii].value;
+                cardClone.value -= scope[target].currentCardsInPlay[ii].value;
 
                 //cleanup if necessary...
-                if(enemy.currentCardsInPlay[ii].duration == "next")
+                if(scope[target].currentCardsInPlay[ii].duration == "next")
                 {
-                    //discard the card in play...
-                    //handleDiscardFromPlay(ii);
+                    //discard the enemy card in play...
+                    handleDiscardFromPlay(ii, enemy);
                 }
             }
         }
@@ -623,6 +725,8 @@ let renderActivePlayerCards = () => {
         document.getElementById("playerActiveCards").appendChild(div);
 
     }
+
+    //@TODO add an enemy active cards div and update them too...
 };
 
 
@@ -643,9 +747,10 @@ let handleDeck = () => {
 
 
 let checkDeck = () => {
-    if(player.currentDeck.length === 0)
+    if(scope[currentTurn].currentDeck.length === 0)
     {
-        console.log("You lose...");
+        //lose a life if you can't draw a card...
+        scope[currentTurn].currentLife--;
         return false;
     }
     return true;
@@ -653,28 +758,36 @@ let checkDeck = () => {
 
 let handleDiscard = (cardIndex) => {
     //copy the current card to the discard pile...
-    player.currentDiscard.push(player.currentHand[cardIndex]);
+    scope[currentTurn].currentDiscard.push(scope[currentTurn].currentHand[cardIndex]);
 
     //now remove the card from the player hand...
-    player.currentHand.splice(cardIndex, 1);
+    scope[currentTurn].currentHand.splice(cardIndex, 1);
 
     //show the user hand...
-    renderHand();
+    if(currentTurn == "player")
+    {
+        renderHand();
+    }
+
 };
 
-let handleDiscardFromPlay = (cardIndex) => {
+let handleDiscardFromPlay = (cardIndex, whom) => {
     //copy the current card to the discard pile...
-    player.currentDiscard.push(player.currentCardsInPlay[cardIndex]);
+    scope[whom].currentDiscard.push(scope[whom].currentCardsInPlay[cardIndex]);
 
     //now remove the card from the player hand...
-    player.currentCardsInPlay.splice(cardIndex, 1);
+    scope[whom].currentCardsInPlay.splice(cardIndex, 1);
 
     //show the user hand...
-    renderActivePlayerCards();
+    //not sure if I'll show any kind of enemy hand at this point...
+    if(whom == "player")
+    {
+        renderActivePlayerCards();
+    }
 
 };
 
-let drawCard = () => player.currentHand.push(player.currentDeck.pop());
+let drawCard = () => scope[currentTurn].currentHand.push(scope[currentTurn].currentDeck.pop());
 
 let updateDeckCount = () => document.getElementById("playerDeckCount").innerHTML = player.currentDeck.length;
 
